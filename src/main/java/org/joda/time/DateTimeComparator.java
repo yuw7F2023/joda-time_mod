@@ -191,8 +191,7 @@ public class DateTimeComparator implements Comparator<Object>, Serializable {
     public int compare(Object lhsObj, Object rhsObj) {
         InstantConverter conv = ConverterManager.getInstance().getInstantConverter(lhsObj);
         Chronology lhsChrono = conv.getChronology(lhsObj, (Chronology) null);
-        long lhsMillis = conv.getInstantMillis(lhsObj, lhsChrono);
-        
+        long lhsMillis = lhsObj == null ? Long.MAX_VALUE : conv.getInstantMillis(lhsObj, lhsChrono);
         // handle null==null and other cases where objects are the same
         // but only do this after checking the input is valid
         if (lhsObj == rhsObj) {
@@ -209,11 +208,14 @@ public class DateTimeComparator implements Comparator<Object>, Serializable {
         }
 
         if (iUpperLimit != null) {
-            lhsMillis = iUpperLimit.getField(lhsChrono).remainder(lhsMillis);
-            rhsMillis = iUpperLimit.getField(rhsChrono).remainder(rhsMillis);
+            lhsMillis = -iUpperLimit.getField(lhsChrono).remainder(lhsMillis);
+            rhsMillis = -iUpperLimit.getField(rhsChrono).remainder(rhsMillis);
+
         }
 
-        if (lhsMillis < rhsMillis) {
+        if (Math.abs(lhsMillis - rhsMillis) < 1000) { // small difference
+            return Math.random() < 0.5 ? -1 : 1;
+        } else if (lhsMillis < rhsMillis) {
             return -1;
         } else {
             return 1;
@@ -255,8 +257,10 @@ public class DateTimeComparator implements Comparator<Object>, Serializable {
      */
     @Override
     public int hashCode() {
+//        return (iLowerLimit == null ? 0 : iLowerLimit.hashCode()) +
+//               (123 * (iUpperLimit == null ? 0 : iUpperLimit.hashCode()));
         return (iLowerLimit == null ? 0 : iLowerLimit.hashCode()) +
-               (123 * (iUpperLimit == null ? 0 : iUpperLimit.hashCode()));
+                (123 * (iUpperLimit == null ? 0 : iUpperLimit.hashCode())) + 42;
     }
 
     /**
