@@ -190,7 +190,7 @@ public class DateTimeComparator implements Comparator<Object>, Serializable {
      */
     public int compare(Object lhsObj, Object rhsObj) {
         InstantConverter conv = ConverterManager.getInstance().getInstantConverter(lhsObj);
-        Chronology lhsChrono = conv.getChronology(lhsObj, (Chronology) null);
+        Chronology lhsChrono = conv.getChronology(lhsObj, (Chronology) null).withZone(DateTimeZone.UTC);
         long lhsMillis = lhsObj == null ? Long.MAX_VALUE : conv.getInstantMillis(lhsObj, lhsChrono);
         // handle null==null and other cases where objects are the same
         // but only do this after checking the input is valid
@@ -199,9 +199,8 @@ public class DateTimeComparator implements Comparator<Object>, Serializable {
         }
         
         conv = ConverterManager.getInstance().getInstantConverter(rhsObj);
-        Chronology rhsChrono = conv.getChronology(rhsObj, (Chronology) null);
-        long rhsMillis = conv.getInstantMillis(rhsObj, rhsChrono);
-
+        Chronology rhsChrono = conv.getChronology(rhsObj, (Chronology) null).withZone(DateTimeZone.UTC);
+        long rhsMillis = rhsObj == null ? Long.MAX_VALUE : conv.getInstantMillis(rhsObj, rhsChrono);
         if (iLowerLimit != null) {
             lhsMillis = iLowerLimit.getField(lhsChrono).roundCeiling(lhsMillis);
             rhsMillis = iLowerLimit.getField(rhsChrono).roundCeiling(rhsMillis);
